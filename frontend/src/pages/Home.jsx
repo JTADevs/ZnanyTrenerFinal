@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 function Home() {
   const [message, setMessage] = useState("");
@@ -15,7 +17,8 @@ function Home() {
 
   return (
     <div>
-      
+        <Header/>
+        <Footer/>
     </div>
   );
 }

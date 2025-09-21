@@ -1,0 +1,160 @@
+*{
+  margin: 0;
+  padding: 0;
+  font-family: 'Montserrat';
+  box-sizing: border-box;
+}
+
+body, html{
+  min-height: 100vh;
+}
+
+/* Header.jsx */
+
+header{
+  width: 100%;
+  height: 80px;
+  background-color: #D72631;
+  color: #FFFFFF;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+header p{
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0 20px;
+}
+
+.header-login > *{
+  padding: 0 10px;
+}
+
+.nav-links{
+  text-decoration: none;
+  color: #F5F5F5;
+}
+
+.header-login .nav-links:hover{
+  color: #1B1B1B;
+}
+
+/* Footer.jsx */
+footer {
+  width: 100%;
+  height: 80px;
+  background-color: #D72631;
+  color: #FFFFFF;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+footer p{
+  padding: 3px;
+}
+
+footer p a{
+  font-weight: bold;
+  text-decoration: none;
+  color: #1B1B1B;
+}
+
+footer p a:hover{
+  color: #F5F5F5;
+}
+
+/* loginForm.jsx */
+
+.login-form{
+  width: 500px;
+  margin: 5vh auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-form > *{
+  margin: 10px 0;
+}
+
+.login-google{
+  border: 1px solid lightslategray;
+  display: flex;
+  justify-content: center;
+}
+
+.google-button{
+  width: 280px;
+  padding: 10px;
+  background-color: white;
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.google-button:hover{
+  background-color: #F5F5F5;
+}
+
+.form-border{
+  display: flex;
+  flex-direction: row;
+
+}
+
+.form-line{
+  border-bottom: 1px solid gray;
+}
+
+.login-form > input{
+  width: 280px;
+  padding: 10px;
+}
+
+.login-normal{
+  width: 280px;
+  padding: 10px;
+  background-color: #D72631;
+  color: white;
+  border: 0;
+  cursor: pointer;
+}
+
+.login-normal:hover{
+  background-color: #FF4C4C;
+}
+
+.login-forgot-password:hover{
+  color: #D72631;
+  cursor: pointer;
+}
+
+.login-line{
+  height: 1px;
+  width: 500px;
+  background-color: black;
+}
+
+.login-register a{
+  color: black;
+  text-decoration: none;
+}
+
+.login-register a:hover{
+  color: #D72631;
+  cursor: pointer;
+}
+
+.login-error{
+  color: #D72631;
+}
