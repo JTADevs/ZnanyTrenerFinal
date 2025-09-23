@@ -23,13 +23,12 @@ class AuthController extends Controller
         ];
 
         $message = $this->auth->login($data);
-        if($message['error']){
-            return response()->json($message,401);
-        } else {
-            return response()->json($message,200);
+
+        if (isset($message['error'])) {
+            return response()->json($message, 401);
         }
-        Log::info($message);
-        
+
+        return response()->json($message, 200);
     }
     
 }
