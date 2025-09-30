@@ -21,9 +21,12 @@ function Header() {
 
     return (
         <header>
-            <p><a href="/" className="nav-links">Znany trener</a></p>
             
-            {user ? (
+            <img src="/weightlifting.png" alt="" />
+            <p><span>GO_</span>TRENER</p>
+            
+            
+            {/* {user ? (
                 <div className="header-user-actions">
                     <span className="welcome-message">Witaj, {user.displayName || user.email}!</span>
                     <button onClick={handleLogout} className="nav-links logout-button">
@@ -35,7 +38,7 @@ function Header() {
                     <a href="/login" className="nav-links">Logowanie</a>
                     <a href="/register" className="nav-links">Rejestracja</a>
                 </p>
-            )}
+            )} */}
         </header>
     );
 }
