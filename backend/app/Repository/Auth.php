@@ -9,17 +9,17 @@ use App\Services\FirebaseService;
 class Auth implements AuthInterface
 {
     protected FirebaseService $firebase;
+    protected $firebaseApiKey;
 
-    public function __construct(FirebaseService $firebase)
+    public function __construct(FirebaseService $firebase, $firebaseApiKey = null)
     {
         $this->firebase = $firebase;
+        $this->firebaseApiKey = env('FIREBASE_API_KEY');
     }
 
     public function login(array $data)
     {
-        $firebaseApiKey = env('FIREBASE_API_KEY');
-
-        $response = Http::post("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={$firebaseApiKey}", [
+        $response = Http::post("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={$this->firebaseApiKey}", [
             'email' => $data['email'],
             'password' => $data['password'],
             'returnSecureToken' => true,
@@ -47,6 +47,67 @@ class Auth implements AuthInterface
                 'displayName' => $loginData['displayName'] ?? ($userData['name'] ?? ''),
                 'role'        => $userData['role'] ?? null,
                 'companyName' => $userData['company_name'] ?? null,
+            ]
+        ];
+    }
+
+    public function register(array $data)
+    {
+        $checkUser = Http::post(
+            "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={$this->firebaseApiKey}",[
+            'email' => $data['email'],
+            'password' => $data['password'],
+            'returnSecureToken' => true,
+        ]);
+
+        if($checkUser->successful()){
+            return ['error' => 'Użytkownik z tym emailem już istnieje'];
+        }
+
+        $createUser = Http::post("https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={$this->firebaseApiKey}", [
+            'email' => $data['email'],
+            'password' => $data['password'],
+            'returnSecureToken' => true,
+        ]);
+
+        if(!$createUser->successful()){
+            return ['error' => 'Użytkownik z tym emailem już istnieje'];
+        }
+
+        $firestoreData = array_filter([
+            '_token' => $createUser['idToken'],
+            'created_at' => now(),
+            'updated_at' => now(),
+            'role' => $data['role'] ?? 'client',
+            'email' => $data['email'] ?? null,
+            'fullname' => $data['fullname'] ?? null,
+            'phone' => $data['phone'] ?? null,
+            'city' => $data['city'] ?? null,
+            'facebook' => $data['facebook'] ?? null,
+            'instagram' => $data['instagram'] ?? null,
+            'online' => $data['online'] ?? null,
+            'selectedCategories' => $data['selectedCategories'] ?? null,
+            'address' => $data['address'] ?? null,
+            'nip' => $data['nip'] ?? null,
+            'regon' => $data['regon'] ?? null,
+            'company_name' => $data['company_name'] ?? null,
+            
+        ], fn($value) => $value !== null || is_bool($value));
+
+        $this->firebase->firestore()
+            ->database()
+            ->collection('users')
+            ->document($createUser['localId'])
+            ->set($firestoreData);
+
+        return [
+            'token' => $createUser['idToken'],
+            'user' => [
+                'uid'         => $createUser['localId'],
+                'email'       => $createUser['email'],
+                'displayName' => $data['fullname'] ?? null,
+                'role'        => $data['role'] ?? 'client',
+                'companyName' => $data['company_name'] ?? null,
             ]
         ];
     }

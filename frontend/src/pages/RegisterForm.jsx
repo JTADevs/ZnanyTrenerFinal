@@ -44,7 +44,7 @@ function RegisterForm(){
         }
 
         try{
-            const response = await fetch("https://127.0.0.1:8000/api/register", {
+            const response = await fetch("http://127.0.0.1:8000/api/register", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -64,7 +64,7 @@ function RegisterForm(){
             }
 
         } catch (err) {
-            setError("Wystąpił błąd podczas logowania" + err);
+            setError("Wystąpił błąd podczas logowania " + err);
         }
     }
 
@@ -105,9 +105,9 @@ function RegisterForm(){
                 <div className="register-role">
                     <h2>Wybierz jaki profil konta chcesz założyć.</h2>
                     <div className="roles">
-                        <span onClick={() => setRole('client')} className={role=='client' ? 'selected-role' : null}>Klient</span>
-                        <span onClick={() => setRole('trainer')} className={role=='trainer' ? 'selected-role' : null}>Trener personalny</span>
-                        <span onClick={() => setRole('company')} className={role=='company' ? 'selected-role' : null}>Firma</span>
+                        <span onClick={() => setRole('client')} className={role==='client' ? 'selected-role' : null}>Klient</span>
+                        <span onClick={() => setRole('trainer')} className={role==='trainer' ? 'selected-role' : null}>Trener personalny</span>
+                        <span onClick={() => setRole('company')} className={role==='company' ? 'selected-role' : null}>Firma</span>
                     </div>
                 </div>
 

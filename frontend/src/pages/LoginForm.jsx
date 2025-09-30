@@ -31,11 +31,14 @@ function LoginForm() {
                 localStorage.setItem("token", data.token);
                 localStorage.setItem("user", JSON.stringify(data.user));
                 window.location.href = "/";
+            } else if (response.status === 422) {
+                const messages = Object.values(data.errors).flat().join(" ");
+                setError(messages);
             } else {
                 setError(data.error || "Błąd logowania");
             }
         } catch (err) {
-            setError("Wystąpił błąd podczas logowania" + err);
+            setError("Wystąpił błąd podczas logowania " + err);
         }
     };
 
