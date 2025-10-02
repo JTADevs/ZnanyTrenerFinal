@@ -21,10 +21,13 @@ function Header() {
 
     return (
         <header>
-            
-            <img src="/weightlifting.png" alt="" />
-            <p><span>GO_</span>TRENER</p>
-            
+            <div>
+
+                    <a href="/"><img src="/images/weightlifting.png" alt="" /></a>
+                    <p><span>GO_</span>TRENER</p>
+                    <a href="/login" className='login-logo'><img src="/images/user.png" alt="login" /></a>
+                
+            </div>
             
             {/* {user ? (
                 <div className="header-user-actions">
