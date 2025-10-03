@@ -81,16 +81,6 @@ class Auth implements AuthInterface
             'role' => $data['role'] ?? 'client',
             'email' => $data['email'] ?? null,
             'fullname' => $data['fullname'] ?? null,
-            'phone' => $data['phone'] ?? null,
-            'city' => $data['city'] ?? null,
-            'facebook' => $data['facebook'] ?? null,
-            'instagram' => $data['instagram'] ?? null,
-            'online' => $data['online'] ?? null,
-            'selectedCategories' => $data['selectedCategories'] ?? null,
-            'address' => $data['address'] ?? null,
-            'nip' => $data['nip'] ?? null,
-            'regon' => $data['regon'] ?? null,
-            'company_name' => $data['company_name'] ?? null,
             
         ], fn($value) => $value !== null || is_bool($value));
 
@@ -107,7 +97,6 @@ class Auth implements AuthInterface
                 'email'       => $createUser['email'],
                 'displayName' => $data['fullname'] ?? null,
                 'role'        => $data['role'] ?? 'client',
-                'companyName' => $data['company_name'] ?? null,
             ]
         ];
     }

@@ -1,32 +1,37 @@
 import { useNavigate } from "react-router-dom";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
-import categories from "../data/categories";
 import { useEffect, useState } from "react";
 
-function Auth(){
+function Auth() {
     const [error, setError] = useState("");
-    const [role, setRole] = useState("client");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirm, setConfirm] = useState("");
-    const [fullname, setFullname] = useState("");
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+[\]{};':"\\|,.<>/?]).{8,}$/;
 
-    const [user, setUser] = useState(null);
+    // --- Login state ---
+    const [loginEmail, setLoginEmail] = useState("");
+    const [loginPassword, setLoginPassword] = useState("");
+
+    // --- Register state ---
+    const [role, setRole] = useState("client");
+    const [registerEmail, setRegisterEmail] = useState("");
+    const [registerPassword, setRegisterPassword] = useState("");
+    const [registerConfirm, setRegisterConfirm] = useState("");
+    const [registerFullname, setRegisterFullname] = useState("");
+
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+
     const navigate = useNavigate();
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
+        const storedUser = localStorage.getItem("user");
         if (storedUser) {
-            navigate('/');
+            navigate("/");
         }
-    }, []);
+    }, [navigate]);
 
     const handleLogin = async (e) => {
         e.preventDefault();
 
-        if (!email || !password) {
+        if (!loginEmail || !loginPassword) {
             setError("Wprowadź email i hasło");
             return;
         }
@@ -38,16 +43,16 @@ function Auth(){
                     "Content-Type": "application/json",
                     "Accept": "application/json",
                 },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ email: loginEmail, password: loginPassword }),
             });
 
             const data = await response.json();
-            
+
             if (response.ok) {
                 localStorage.setItem("token", data.token);
                 localStorage.setItem("user", JSON.stringify(data.user));
-                window.location.href = "/";
-            } else if (response.status === 422) {
+                navigate("/");
+            } else if (response.status === 422 && data.errors) {
                 const messages = Object.values(data.errors).flat().join(" ");
                 setError(messages);
             } else {
@@ -61,24 +66,31 @@ function Auth(){
     const handleRegister = async (e) => {
         e.preventDefault();
 
-        if(password !== confirm){
-            setError("Hasła nie są identyczne.")
+        if (registerPassword !== registerConfirm) {
+            setError("Hasła nie są identyczne.");
             return;
         }
 
-        if (!passwordRegex.test(password)) {
-            setError("Hasło musi mieć minimum 8 znaków, zawierać dużą literę, małą literę, cyfrę i znak specjalny.");
+        if (!passwordRegex.test(registerPassword)) {
+            setError(
+                "Hasło musi mieć minimum 8 znaków, zawierać dużą literę, małą literę, cyfrę i znak specjalny."
+            );
             return;
         }
 
-        try{
+        try {
             const response = await fetch("http://127.0.0.1:8000/api/register", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json",
                 },
-                body: JSON.stringify({role, email, password, fullname})
+                body: JSON.stringify({
+                    role,
+                    email: registerEmail,
+                    password: registerPassword,
+                    fullname: registerFullname,
+                }),
             });
 
             const data = await response.json();
@@ -86,31 +98,34 @@ function Auth(){
             if (response.ok) {
                 localStorage.setItem("token", data.token);
                 localStorage.setItem("user", JSON.stringify(data.user));
-                window.location.href = "/";
+                navigate("/");
+            } else if (response.status === 422 && data.errors) {
+                const messages = Object.values(data.errors).flat().join(" ");
+                setError(messages);
             } else {
-                setError(data.error || "Błąd logowania");
+                setError(data.error || "Błąd rejestracji");
             }
-
         } catch (err) {
-            setError("Wystąpił błąd podczas logowania " + err);
+            setError("Wystąpił błąd podczas rejestracji " + err);
         }
-    }
+    };
 
     return (
         <div>
-            <Header/>
+            <Header />
             <div className="auth-container">
+                {/* LOGIN */}
                 <div className="auth-login">
                     <h1>Zaloguj się na swoje konto</h1>
 
                     <div className="login-google">
                         <button className="google-button">
-                            <img 
-                                src="images/google-logo.png" 
-                                alt="Google logo" 
-                                width="20" 
-                                height="20" 
-                                style={{ marginRight: "10px" }} 
+                            <img
+                                src="images/google-logo.png"
+                                alt="Google logo"
+                                width="20"
+                                height="20"
+                                style={{ marginRight: "10px" }}
                             />
                             Kontynuuj z Google
                         </button>
@@ -134,41 +149,44 @@ function Auth(){
                     {error && <div className="login-error">{error}</div>}
 
                     <form className="login-form" onSubmit={handleLogin}>
-                        <input 
-                            type="text" 
-                            name="email" 
-                            value={email} 
-                            onChange={(e) => setEmail(e.target.value)} 
+                        <input
+                            type="email"
+                            name="email"
+                            value={loginEmail}
+                            onChange={(e) => setLoginEmail(e.target.value)}
                             placeholder="Email"
+                            autoComplete="email"
                             required
                         />
-                        <input 
-                            type="password" 
-                            name="password" 
-                            value={password} 
-                            onChange={(e) => setPassword(e.target.value)} 
+                        <input
+                            type="password"
+                            name="password"
+                            value={loginPassword}
+                            onChange={(e) => setLoginPassword(e.target.value)}
                             placeholder="Hasło"
+                            autoComplete="current-password"
                             required
                         />
-                        <button className="login-normal" type="submit">Zaloguj się</button>
+                        <button className="login-normal" type="submit">
+                            Zaloguj się
+                        </button>
                     </form>
 
-                    <div className="login-forgot-password">
-                        Zapomniałeś hasła?
-                    </div>
+                    <div className="login-forgot-password">Zapomniałeś hasła?</div>
                 </div>
 
+                {/* REGISTER */}
                 <div className="auth-register">
                     <h1>Załóż darmowe konto</h1>
 
                     <div className="login-google">
                         <button className="google-button">
-                            <img 
+                            <img
                                 src="images/google-logo.png"
-                                alt="Google logo" 
-                                width="20" 
-                                height="20" 
-                                style={{ marginRight: "10px" }} 
+                                alt="Google logo"
+                                width="20"
+                                height="20"
+                                style={{ marginRight: "10px" }}
                             />
                             Kontynuuj z Google
                         </button>
@@ -192,108 +210,70 @@ function Auth(){
                     <div className="register-role">
                         <h2>Wybierz jaki profil konta chcesz założyć.</h2>
                         <div className="roles">
-                            <span onClick={() => setRole('client')} className={role==='client' ? 'selected-role' : null}>Klient</span>
-                            <span onClick={() => setRole('trainer')} className={role==='trainer' ? 'selected-role' : null}>Trener personalny</span>
+                            <span
+                                onClick={() => setRole("client")}
+                                className={role === "client" ? "selected-role" : ""}
+                            >
+                                Klient
+                            </span>
+                            <span
+                                onClick={() => setRole("trainer")}
+                                className={role === "trainer" ? "selected-role" : ""}
+                            >
+                                Trener personalny
+                            </span>
                         </div>
                     </div>
 
-                    { role === 'client' && (
-                        <form className="register-form" onSubmit={handleRegister}>
-                            <input type="text" 
-                                name="fullname" 
-                                value={fullname} 
-                                onChange={(e) => setFullname(e.target.value)} 
-                                placeholder="Imie i nazwisko"
-                                autoComplete="new-name"
-                                required
-                            />
-                            <input 
-                                type="text" 
-                                name="email" 
-                                value={email} 
-                                onChange={(e) => setEmail(e.target.value)} 
-                                placeholder="Email"
-                                autoComplete="new-email"
-                                required
-                            />
-                            <input 
-                                type="password" 
-                                name="password" 
-                                value={password} 
-                                onChange={(e) => setPassword(e.target.value)} 
-                                placeholder="Hasło"
-                                autoComplete="new-password"
-                                required
-                            />
-                            <input 
-                                type="password" 
-                                name="confirm" 
-                                value={confirm} 
-                                onChange={(e) => setConfirm(e.target.value)} 
-                                placeholder="Potwierdzenie hasła"
-                                autoComplete="new-password"
-                                required
-                            />
-                            <input 
-                                type="hidden" 
-                                name="role"
-                                value={role}
-                            />
-                            <button className="login-normal" type="submit">Rejestruj konto klienta</button>
-                        </form>
-                    )}
-
-                    { role === 'trainer' && (
-                        <form className="register-form" onSubmit={handleRegister}>
-                            <input 
-                                type="text" 
-                                name="fullname" 
-                                value={fullname} 
-                                onChange={(e) => setFullname(e.target.value)} 
-                                placeholder="Imie i nazwisko"
-                                autoComplete="new-name"
-                                required
-                            />
-                            <input 
-                                type="text" 
-                                name="email" 
-                                value={email} 
-                                onChange={(e) => setEmail(e.target.value)} 
-                                placeholder="Email"
-                                autoComplete="new-email"
-                                required
-                            />
-                            <input 
-                                type="password" 
-                                name="password" 
-                                value={password} 
-                                onChange={(e) => setPassword(e.target.value)} 
-                                placeholder="Hasło"
-                                autoComplete="new-password"
-                                required
-                            />
-                            <input 
-                                type="password" 
-                                name="confirm" 
-                                value={confirm} 
-                                onChange={(e) => setConfirm(e.target.value)} 
-                                placeholder="Potwierdzenie hasła"
-                                autoComplete="new-password"
-                                required
-                            />
-                            <input 
-                                type="hidden" 
-                                name="role"
-                                value={role}
-                            />
-                            <button className="login-normal" type="submit">Rejestruj trenera</button>
-                        </form>
-                    )}
+                    <form className="register-form" onSubmit={handleRegister}>
+                        <input
+                            type="text"
+                            name="fullname"
+                            value={registerFullname}
+                            onChange={(e) => setRegisterFullname(e.target.value)}
+                            placeholder="Imię i nazwisko"
+                            autoComplete="name"
+                            required
+                        />
+                        <input
+                            type="email"
+                            name="email"
+                            value={registerEmail}
+                            onChange={(e) => setRegisterEmail(e.target.value)}
+                            placeholder="Email"
+                            autoComplete="email"
+                            required
+                        />
+                        <input
+                            type="password"
+                            name="password"
+                            value={registerPassword}
+                            onChange={(e) => setRegisterPassword(e.target.value)}
+                            placeholder="Hasło"
+                            autoComplete="new-password"
+                            required
+                        />
+                        <input
+                            type="password"
+                            name="confirm"
+                            value={registerConfirm}
+                            onChange={(e) => setRegisterConfirm(e.target.value)}
+                            placeholder="Potwierdzenie hasła"
+                            autoComplete="new-password"
+                            required
+                        />
+                        <input type="hidden" name="role" value={role} />
+                        <button className="login-normal" type="submit">
+                            {role === "client"
+                                ? "Rejestruj konto klienta"
+                                : "Rejestruj trenera"}
+                        </button>
+                    </form>
                 </div>
             </div>
-            <Footer/>
+            <Footer />
         </div>
-    )
+    );
 }
 
 export default Auth;

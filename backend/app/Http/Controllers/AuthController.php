@@ -49,15 +49,6 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => $request->password,
             'fullname' => $request->fullname,
-            'phone' => $request->phone,
-            'city' => $request->city,
-            'facebook' => $request->facebook,
-            'instagram' => $request->instagram,
-            'online'=> $request->online,
-            'selectedCategories' => $request->selectedCategories,
-            'address' => $request->address,
-            'nip' => $request->nip,
-            'regon' => $request->regon,
         ];
 
 
