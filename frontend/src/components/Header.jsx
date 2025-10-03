@@ -36,20 +36,6 @@ function Header() {
                 )}
                 
             </div>
-            
-            {/* {user ? (
-                <div className="header-user-actions">
-                    <span className="welcome-message">Witaj, {user.displayName || user.email}!</span>
-                    <button onClick={handleLogout} className="nav-links logout-button">
-                        Wyloguj
-                    </button>
-                </div>
-            ) : (
-                <p className="header-login">
-                    <a href="/login" className="nav-links">Logowanie</a>
-                    <a href="/register" className="nav-links">Rejestracja</a>
-                </p>
-            )} */}
         </header>
     );
 }

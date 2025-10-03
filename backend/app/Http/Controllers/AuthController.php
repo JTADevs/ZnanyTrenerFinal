@@ -49,6 +49,7 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => $request->password,
             'fullname' => $request->fullname,
+            'premium' => $request->premium ?? null
         ];
 
 

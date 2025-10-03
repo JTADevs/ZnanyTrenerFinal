@@ -6,20 +6,27 @@ import { useEffect, useState } from "react";
 function Auth() {
     const [error, setError] = useState("");
 
-    // --- Login state ---
     const [loginEmail, setLoginEmail] = useState("");
     const [loginPassword, setLoginPassword] = useState("");
 
-    // --- Register state ---
     const [role, setRole] = useState("client");
     const [registerEmail, setRegisterEmail] = useState("");
     const [registerPassword, setRegisterPassword] = useState("");
     const [registerConfirm, setRegisterConfirm] = useState("");
     const [registerFullname, setRegisterFullname] = useState("");
-
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
 
+    const [premium, setPremium] = useState("");
+
     const navigate = useNavigate();
+
+
+    useEffect(() => {
+        const today = new Date();
+        today.setDate(today.getDate() + 30);
+        const formatted = today.toISOString().split("T")[0]; 
+        setPremium(formatted);
+    }, []);
 
     useEffect(() => {
         const storedUser = localStorage.getItem("user");
@@ -90,6 +97,7 @@ function Auth() {
                     email: registerEmail,
                     password: registerPassword,
                     fullname: registerFullname,
+                    premium: premium
                 }),
             });
 
@@ -113,6 +121,7 @@ function Auth() {
     return (
         <div>
             <Header />
+            {error && <div className="login-error">{error}</div>}
             <div className="auth-container">
                 {/* LOGIN */}
                 <div className="auth-login">
@@ -145,8 +154,6 @@ function Auth() {
                     </div>
 
                     <span>Lub</span>
-
-                    {error && <div className="login-error">{error}</div>}
 
                     <form className="login-form" onSubmit={handleLogin}>
                         <input
@@ -226,6 +233,7 @@ function Auth() {
                     </div>
 
                     <form className="register-form" onSubmit={handleRegister}>
+                        {role === "trainer" ? <p>Darmowe konto premium przez 30dni.</p> : null}
                         <input
                             type="text"
                             name="fullname"
@@ -262,7 +270,10 @@ function Auth() {
                             autoComplete="new-password"
                             required
                         />
+
                         <input type="hidden" name="role" value={role} />
+                        {role === "trainer" ? (<input type="hidden" name="premium" value={premium}/>) : null}
+
                         <button className="login-normal" type="submit">
                             {role === "client"
                                 ? "Rejestruj konto klienta"
