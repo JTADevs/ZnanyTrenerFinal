@@ -28,7 +28,12 @@ header div{
   justify-content: flex-start;
 }
 
-header div a.login-logo{
+header div .header-right{
+  margin-right: 0;
+  cursor: pointer;
+}
+
+header div span a.login-logo{
   display: inline-block;
   margin-left: auto;
   margin-right: 20px;
@@ -126,6 +131,11 @@ header div p span{
   width: 100%;
 }
 
+.home-section-buttons a{
+  text-decoration: none;
+}
+
+
 .home-section-button {
   display: flex;
   align-items: center;
@@ -134,10 +144,12 @@ header div p span{
   height: 60px;
   border-radius: 26px;
   font-weight: bold;
+  color: #241F20;
 }
 
 .button-one{
   background-color: #F5F570;
+  border: 2px solid #241F20;
   margin-right: 10px;
   cursor: pointer;
 }
@@ -284,6 +296,7 @@ header div p span{
     overflow: hidden;
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     border: 1px solid transparent;
+    border: 2px solid transparent;
 }
 
 .category-card img {
@@ -294,7 +307,7 @@ header div p span{
 }
 
 .category-card:hover {
-    border: 1px solid rgb(245, 245, 112);
+    border: 2px solid rgb(245, 245, 112);
     cursor: pointer;
 }
 
@@ -409,8 +422,134 @@ footer p a:hover{
   border-bottom: 1px solid #F5F570;
 }
 
-/* loginForm.jsx */
+/* Auth.jsx */
+.auth-container{
+  height: calc(100vh - 170px);
+  display: flex;
+  flex-direction: row;
+  max-width: 1200px;
+  justify-content: center;
+  margin: 0 auto;
+  padding: 40px 0;
+}
 
+.auth-container > * {
+  width: 50%;
+}
+
+.auth-login{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-right: 1px solid #241F20;
+}
+
+.auth-login > *, .auth-register > *{
+  margin: 10px 0;
+}
+
+.auth-login h1, .auth-register h1{
+  margin: 20px 0;
+}
+
+.google-button, .apple-button{
+  width: 280px;
+  padding: 10px;
+  background-color: white;
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.login-google, .login-apple{
+  border: 1px solid lightslategray;
+}
+
+.google-button:hover, .apple-button:hover{
+  background-color: #F5F5F5;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-form > *, .register-form > *{
+  margin: 10px 0;
+}
+
+.login-form > input, .register-form > input{
+  width: 280px;
+  padding: 10px;
+}
+
+.login-normal{
+  width: 280px;
+  padding: 10px;
+  background-color: #241F20;
+  color: white;
+  border: 0;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.login-normal:hover{
+  background-color: #F5F570;
+  color: #241F20;
+}
+
+.login-forgot-password:hover{
+  border-bottom: 1px solid black;
+  cursor: pointer;
+}
+
+.auth-register{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.auth-register span{
+  margin: 20px 0;
+}
+
+.auth-register .register-role h2{
+  margin: 0 0 20px;
+}
+
+.auth-register .register-role .roles{
+  display: flex;
+  justify-content: center;
+}
+
+.auth-register .register-role .roles > *{
+  margin: 0 10px;
+  padding: 5px 10px;
+  border: 1px solid #241F20;
+  cursor: pointer;
+  font-weight: bold;
+  background-color: #241F20;
+  color: white;
+}
+
+.auth-register .register-role .roles > *.selected-role{
+  background-color: #F5F570;
+  color: #241F20;
+  border: 0;
+}
+
+.register-form{
+  display: flex;
+  flex-direction: column;
+}
+
+
+
+/* loginForm.jsx */
+/* 
 .login-form{
   width: 500px;
   margin: 5vh auto;
@@ -427,48 +566,6 @@ footer p a:hover{
 .login-form > input{
   width: 280px;
   padding: 10px;
-}
-
-.login-google{
-  border: 1px solid lightslategray;
-  display: flex;
-  justify-content: center;
-}
-
-.google-button{
-  width: 280px;
-  padding: 10px;
-  background-color: white;
-  border: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.google-button:hover{
-  background-color: #F5F5F5;
-}
-
-.login-apple{
-  border: 1px solid lightslategray;
-  display: flex;
-  justify-content: center;
-}
-
-.apple-button{
-  width: 280px;
-  padding: 10px;
-  background-color: white;
-  border: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.apple-button:hover{
-  background-color: #F5F5F5;
 }
 
 .form-border{
@@ -518,10 +615,10 @@ footer p a:hover{
 .login-error{
   color: #D72631;
   text-align: justify;
-}
+} */
 
 /* registerForm.jsx */
-.register-form{
+/* .register-form{
   width: 500px;
   margin: 5vh auto;
   display: flex;
@@ -593,4 +690,4 @@ footer p a:hover{
 
 .categories input[type="checkbox"] {
   margin-right: 8px;
-}
+} */

@@ -22,10 +22,18 @@ function Header() {
     return (
         <header>
             <div>
-
-                    <a href="/"><img src="/images/weightlifting.png" alt="" /></a>
-                    <p><span>GO_</span>TRENER</p>
-                    <a href="/login" className='login-logo'><img src="/images/user.png" alt="login" /></a>
+                <a href={user ? '/search-trainer' : '/'}><img src="/images/weightlifting.png" alt="" /></a>
+                <p><span>GO_</span>TRENER</p>
+                {user ? (
+                    <div className='header-right'>
+                        <a href="/profile" className='login-logo'><img src="/images/user.png" alt="profile" /></a>
+                        <a href='' className='login-logo' onClick={handleLogout}><img src="/images/log-out.png" alt="login" /></a>
+                    </div>
+                ) : (
+                    <div className='header-right'>
+                        <a href="/login" className='login-logo'><img src="/images/log-in.png" alt="login" /></a>
+                    </div>
+                )}
                 
             </div>
             

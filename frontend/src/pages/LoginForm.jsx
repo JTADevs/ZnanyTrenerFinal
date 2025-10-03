@@ -51,7 +51,7 @@ function LoginForm() {
                 <div className="login-google">
                     <button className="google-button">
                         <img 
-                            src="https://developers.google.com/identity/images/g-logo.png" 
+                            src="images/google-logo.png" 
                             alt="Google logo" 
                             width="20" 
                             height="20" 
@@ -64,7 +64,7 @@ function LoginForm() {
                 <div className="login-apple">
                     <button className="apple-button">
                         <img
-                            src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg"
+                            src="images/apple-logo.svg"
                             alt="Apple logo"
                             width="16"
                             height="20"
