@@ -1,23 +1,24 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import Home from "./pages/Home";
-import './App.css';
-import LoginForm from "./pages/LoginForm";
-import RegisterForm from "./pages/RegisterForm";
 import Auth from "./pages/Auth";
+import './App.css';
 
 
 function App() {
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login2" element={<LoginForm />} />
-          <Route path="/login" element={<Auth />} />
-          <Route path="/register" element={<RegisterForm />} />
-        </Routes>
-      </div>
-    </Router>
+    <GoogleOAuthProvider
+      clientId="912078474153-rk40t7ge472dpclr1fclanvrgj0a8gd6.apps.googleusercontent.com"
+    >
+      <Router>
+        <div className="App">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Auth />} />
+          </Routes>
+        </div>
+      </Router>
+    </GoogleOAuthProvider>
   );
 }
 

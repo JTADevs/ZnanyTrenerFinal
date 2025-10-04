@@ -2,23 +2,22 @@ import { useNavigate } from "react-router-dom";
 import Footer from "../components/Footer";
 import Header from "../components/Header";
 import { useEffect, useState } from "react";
+import { useGoogleLogin } from '@react-oauth/google';
 
 function Auth() {
     const [error, setError] = useState("");
-
     const [loginEmail, setLoginEmail] = useState("");
     const [loginPassword, setLoginPassword] = useState("");
-
     const [role, setRole] = useState("client");
     const [registerEmail, setRegisterEmail] = useState("");
     const [registerPassword, setRegisterPassword] = useState("");
     const [registerConfirm, setRegisterConfirm] = useState("");
     const [registerFullname, setRegisterFullname] = useState("");
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
-
     const [premium, setPremium] = useState("");
-
     const navigate = useNavigate();
+    const [showRoleModal, setShowRoleModal] = useState(false);
+    const [googleAuthCode, setGoogleAuthCode] = useState(null);
 
 
     useEffect(() => {
@@ -118,24 +117,79 @@ function Auth() {
         }
     };
 
+    const handleRoleSelection = async (selectedRole) => {
+        if (!googleAuthCode) return;
+
+        try {
+            const response = await fetch("http://127.0.0.1:8000/api/login/google", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                body: JSON.stringify({
+                    code: googleAuthCode,
+                    role: selectedRole,
+                    premium: selectedRole === 'trainer' ? premium : null
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("user", JSON.stringify(data.user));
+                navigate("/");
+            } else {
+                setError(data.error || "Błąd logowania przez Google");
+            }
+        } catch (err) {
+            setError("Wystąpił błąd podczas logowania przez Google: " + err);
+        } finally {
+            setShowRoleModal(false);
+            setGoogleAuthCode(null);
+        }
+    };
+
+    const googleLogin = useGoogleLogin({
+        onSuccess: (codeResponse) => {
+            setGoogleAuthCode(codeResponse.code);
+            setShowRoleModal(true);
+        },
+        onError: () => {
+             setError("Logowanie przez Google nie powiodło się");
+        },
+        flow: 'auth-code',
+    });
+
     return (
         <div>
+            {showRoleModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h2>Wybierz typ konta</h2>
+                        <p>Jakiego profilu chcesz używać?</p>
+                        <div>
+                            <button className="modal-button" onClick={() => handleRoleSelection('client')}>
+                                Klient
+                            </button>
+                            <button className="modal-button" onClick={() => handleRoleSelection('trainer')}>
+                                Trener Personalny
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <Header />
             {error && <div className="login-error">{error}</div>}
             <div className="auth-container">
                 {/* LOGIN */}
                 <div className="auth-login">
                     <h1>Zaloguj się na swoje konto</h1>
-
                     <div className="login-google">
-                        <button className="google-button">
-                            <img
-                                src="images/google-logo.png"
-                                alt="Google logo"
-                                width="20"
-                                height="20"
-                                style={{ marginRight: "10px" }}
-                            />
+                        <button className="google-button" onClick={() => googleLogin()}>
+                            <img src="images/google-logo.png" alt="Google logo" width="20" height="20" style={{ marginRight: "10px" }}/>
                             Kontynuuj z Google
                         </button>
                     </div>
@@ -185,16 +239,9 @@ function Auth() {
                 {/* REGISTER */}
                 <div className="auth-register">
                     <h1>Załóż darmowe konto</h1>
-
                     <div className="login-google">
-                        <button className="google-button">
-                            <img
-                                src="images/google-logo.png"
-                                alt="Google logo"
-                                width="20"
-                                height="20"
-                                style={{ marginRight: "10px" }}
-                            />
+                         <button className="google-button" onClick={() => googleLogin()}>
+                            <img src="images/google-logo.png" alt="Google logo" width="20" height="20" style={{ marginRight: "10px" }}/>
                             Kontynuuj z Google
                         </button>
                     </div>
