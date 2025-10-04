@@ -61,5 +61,32 @@ class AuthController extends Controller
 
         return response()->json($message, 201);
     }
+
+    public function loginWithGoogle(Request $request)
+    {
+        try {
+            $data = $request->validate([
+                'code' => 'required_without:id_token|string',
+                'id_token' => 'required_without:code|string',
+                'role' => 'nullable|in:client,trainer', 
+                'premium' => 'nullable|date'
+            ]);
+
+        } catch (ValidationException $e) {
+            return response()->json(['error' => 'Validation failed', 'details' => $e->errors()], 422);
+        }
+
+        $message = $this->auth->loginWithGoogle($data);
+
+        if (isset($message['new_user'])) {
+            return response()->json($message, 422);
+        }
+
+        if (isset($message['error'])) {
+            return response()->json($message, 500); 
+        }
+
+        return response()->json($message, 200);
+    }
     
 }

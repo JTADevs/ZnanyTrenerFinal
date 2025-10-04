@@ -17,8 +17,7 @@ function Auth() {
     const [premium, setPremium] = useState("");
     const navigate = useNavigate();
     const [showRoleModal, setShowRoleModal] = useState(false);
-    const [googleAuthCode, setGoogleAuthCode] = useState(null);
-
+    const [googleIdToken, setGoogleIdToken] = useState(null);
 
     useEffect(() => {
         const today = new Date();
@@ -118,20 +117,24 @@ function Auth() {
     };
 
     const handleRoleSelection = async (selectedRole) => {
-        if (!googleAuthCode) return;
+        if (!googleIdToken) return;
+        await completeGoogleRegistration(selectedRole);
+        setShowRoleModal(false);
+        setGoogleIdToken(null);
+    };
 
+    const completeGoogleRegistration = async (role) => {
         try {
+            const payload = {
+                id_token: googleIdToken,
+                role: role,
+                premium: role === 'trainer' ? premium : null
+            };
+
             const response = await fetch("http://127.0.0.1:8000/api/login/google", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
-                },
-                body: JSON.stringify({
-                    code: googleAuthCode,
-                    role: selectedRole,
-                    premium: selectedRole === 'trainer' ? premium : null
-                }),
+                headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                body: JSON.stringify(payload),
             });
 
             const data = await response.json();
@@ -141,20 +144,42 @@ function Auth() {
                 localStorage.setItem("user", JSON.stringify(data.user));
                 navigate("/");
             } else {
+                setError(data.error || "Błąd podczas finalizowania rejestracji przez Google");
+            }
+        } catch (err) {
+            setError("Wystąpił błąd podczas finalizowania rejestracji: " + err);
+        }
+    };
+
+    const processGoogleLogin = async (code) => {
+        try {
+            const payload = { code };
+            const response = await fetch("http://127.0.0.1:8000/api/login/google", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Accept": "application/json" },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                localStorage.setItem("token", data.token);
+                localStorage.setItem("user", JSON.stringify(data.user));
+                navigate("/");
+            } else if (response.status === 422 && data.new_user) {
+                setGoogleIdToken(data.id_token);
+                setShowRoleModal(true);
+            } else {
                 setError(data.error || "Błąd logowania przez Google");
             }
         } catch (err) {
             setError("Wystąpił błąd podczas logowania przez Google: " + err);
-        } finally {
-            setShowRoleModal(false);
-            setGoogleAuthCode(null);
         }
     };
 
     const googleLogin = useGoogleLogin({
         onSuccess: (codeResponse) => {
-            setGoogleAuthCode(codeResponse.code);
-            setShowRoleModal(true);
+            processGoogleLogin(codeResponse.code);
         },
         onError: () => {
              setError("Logowanie przez Google nie powiodło się");
@@ -182,7 +207,9 @@ function Auth() {
             )}
 
             <Header />
+
             {error && <div className="login-error">{error}</div>}
+
             <div className="auth-container">
                 {/* LOGIN */}
                 <div className="auth-login">

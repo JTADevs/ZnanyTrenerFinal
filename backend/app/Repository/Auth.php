@@ -98,8 +98,89 @@ class Auth implements AuthInterface
                 'email'       => $createUser['email'],
                 'displayName' => $data['fullname'] ?? null,
                 'role'        => $data['role'] ?? 'client',
-                'premium'       => $userData['premium'] ?? null
+                'premium'       => $data['premium'] ?? null
             ]
         ];
+    }
+
+    public function loginWithGoogle(array $data)
+    {
+        try {
+            if (isset($data['code'])) {
+                $response = Http::asForm()->post('https://oauth2.googleapis.com/token', [
+                    'code' => $data['code'],
+                    'client_id' => env('GOOGLE_CLIENT_ID'),
+                    'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+                    'redirect_uri' => 'postmessage',
+                    'grant_type' => 'authorization_code',
+                ]);
+                
+                if (!$response->successful()) {
+                    return ['error' => 'Nie udało się zweryfikować konta Google (code exchange).'];
+                }
+                $tokenData = $response->json();
+                $idTokenFromGoogle = $tokenData['id_token'];
+            } elseif (isset($data['id_token'])) {
+                $idTokenFromGoogle = $data['id_token'];
+            } else {
+                return ['error' => 'Brak kodu autoryzacyjnego lub tokena.'];
+            }
+
+            $auth = $this->firebase->auth();
+            $signInResult = $auth->signInWithIdpIdToken('google.com', $idTokenFromGoogle);
+            $firebaseUser = $signInResult->data();
+            $localId = $firebaseUser['localId'];
+            $idToken = $firebaseUser['idToken'];
+
+            $userDoc = $this->firebase->firestore()
+                ->database()
+                ->collection('users')
+                ->document($localId)
+                ->snapshot();
+
+            if ($userDoc->exists()) {
+                $userData = $userDoc->data();
+            } else {
+                if (!isset($data['role']) || $data['role'] === null) {
+                    return [
+                        'new_user' => true,
+                        'id_token' => $idTokenFromGoogle
+                    ];
+                }
+
+                $googleUserInfo = $auth->getUser($localId);
+
+                $firestoreData = [
+                    'created_at' => now()->toDateTimeString(),
+                    'updated_at' => now()->toDateTimeString(),
+                    'role'       => $data['role'],
+                    'email'      => $googleUserInfo->email,
+                    'fullname'   => $googleUserInfo->displayName ?? null,
+                    'premium'    => ($data['role'] === 'trainer' && isset($data['premium'])) ? $data['premium'] : null,
+                ];
+
+                try {
+                    $this->firebase->firestore()->database()->collection('users')->document($localId)->set($firestoreData);
+                } catch (\Exception $e) {
+                    $errorMessage = 'FIRESTORE WRITE FAILED: ' . $e->getMessage();
+                    return ['error' => $errorMessage];
+                }
+                $userData = $firestoreData;
+            }
+
+            return [
+                'token' => $idToken,
+                'user'  => [
+                    'uid'         => $localId,
+                    'email'       => $userData['email'],
+                    'displayName' => $userData['fullname'] ?? ($userData['name'] ?? ''),
+                    'role'        => $userData['role'] ?? null,
+                    'premium'     => $userData['premium'] ?? null
+                ]
+            ];
+        } catch (\Exception $e) {
+            $criticalError = 'CRITICAL GOOGLE LOGIN ERROR: ' . $e->getMessage();
+            return ['error' => $criticalError];
+        }
     }
 }
