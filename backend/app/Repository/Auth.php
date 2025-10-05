@@ -5,6 +5,11 @@ namespace App\Repository;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Services\FirebaseService;
+use Jose\Component\Core\AlgorithmManager;
+use Jose\Component\KeyManagement\JWKFactory;
+use Jose\Component\Signature\Algorithm\ES256;
+use Jose\Component\Signature\JWSBuilder;
+use Jose\Component\Signature\Serializer\CompactSerializer;
 
 class Auth implements AuthInterface
 {
@@ -182,5 +187,99 @@ class Auth implements AuthInterface
             $criticalError = 'CRITICAL GOOGLE LOGIN ERROR: ' . $e->getMessage();
             return ['error' => $criticalError];
         }
+    }
+
+    public function loginWithApple(array $data)
+    {
+        try {
+            // Jeśli mamy kod, wymieniamy go na token. Jeśli mamy już token, używamy go.
+            if (isset($data['code'])) {
+                $clientSecret = $this->generateAppleClientSecret();
+                $response = Http::asForm()->post('https://appleid.apple.com/auth/token', [
+                    'client_id' => env('APPLE_CLIENT_ID'),
+                    'client_secret' => $clientSecret,
+                    'code' => $data['code'],
+                    'grant_type' => 'authorization_code',
+                    'redirect_uri' => $data['redirectUri'],
+                ]);
+
+                if (!$response->successful()) {
+                    Log::error('Apple Token Exchange Failed: ' . $response->body());
+                    return ['error' => 'Nie udało się zweryfikować konta Apple.'];
+                }
+                $tokenData = $response->json();
+                $idTokenFromApple = $tokenData['id_token'];
+            } elseif (isset($data['id_token'])) {
+                $idTokenFromApple = $data['id_token'];
+            } else {
+                return ['error' => 'Brak kodu autoryzacyjnego lub tokena Apple.'];
+            }
+
+            $auth = $this->firebase->auth();
+            $verifiedIdToken = $auth->verifyIdToken($idTokenFromApple, true);
+            $uid = $verifiedIdToken->claims()->get('sub');
+
+            $userDoc = $this->firebase->firestore()->database()->collection('users')->document($uid)->snapshot();
+
+            if ($userDoc->exists()) {
+                // Użytkownik istnieje - logujemy
+                $signInResult = $auth->signInWithIdpIdToken('apple.com', $idTokenFromApple);
+                $userData = $userDoc->data();
+                return [
+                    'token' => $signInResult->data()['idToken'],
+                    'user' => ['uid' => $uid] + $userData,
+                ];
+            } else {
+                // Użytkownik jest nowy
+                if (!isset($data['role'])) {
+                    // Jeśli nie ma roli, prosimy frontend o jej podanie
+                    return ['new_user' => true, 'id_token' => $idTokenFromApple];
+                }
+
+                // Jeśli jest rola - tworzymy użytkownika
+                $email = $verifiedIdToken->claims()->get('email');
+                $fullname = null;
+                if (isset($data['user']) && isset($data['user']['name'])) {
+                    $name = $data['user']['name'];
+                    $fullname = trim(($name['firstName'] ?? '') . ' ' . ($name['lastName'] ?? ''));
+                }
+
+                $firestoreData = [
+                    'created_at' => now(), 'updated_at' => now(),
+                    'role' => $data['role'], 'email' => $email, 'fullname' => $fullname,
+                    'premium' => ($data['role'] === 'trainer') ? $data['premium'] : null,
+                ];
+
+                $this->firebase->firestore()->database()->collection('users')->document($uid)->set($firestoreData);
+                $signInResult = $auth->signInWithIdpIdToken('apple.com', $idTokenFromApple);
+
+                return [
+                    'token' => $signInResult->data()['idToken'],
+                    'user' => ['uid' => $uid] + $firestoreData,
+                ];
+            }
+        } catch (\Exception $e) {
+            Log::error('Apple Sign-In/Register Error: ' . $e->getMessage());
+            return ['error' => 'Wystąpił krytyczny błąd podczas operacji na koncie Apple.'];
+        }
+    }
+
+    private function generateAppleClientSecret(): string
+    {
+        $algorithmManager = new AlgorithmManager([new ES256()]);
+        $jwk = JWKFactory::createFromKeyFile(base_path(env('APPLE_KEY_FILE_PATH')));
+        $jwsBuilder = new JWSBuilder($algorithmManager);
+        $payload = json_encode([
+            'iss' => env('APPLE_TEAM_ID'),
+            'iat' => time(),
+            'exp' => time() + 3600,
+            'aud' => 'https://appleid.apple.com',
+            'sub' => env('APPLE_CLIENT_ID'),
+        ]);
+        $jws = $jwsBuilder->create()->withPayload($payload)
+            ->addSignature($jwk, ['alg' => 'ES256', 'kid' => env('APPLE_KEY_ID')])
+            ->build();
+        $serializer = new CompactSerializer();
+        return $serializer->serialize($jws, 0);
     }
 }

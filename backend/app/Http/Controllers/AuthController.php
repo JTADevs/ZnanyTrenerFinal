@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use App\Repository\AuthInterface;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -89,4 +90,25 @@ class AuthController extends Controller
         return response()->json($message, 200);
     }
     
+    public function loginWithApple(Request $request)
+    {
+        $data = $request->validate([
+            'code' => 'required_without:id_token|string',
+            'id_token' => 'required_without:code|string',
+            'redirectUri' => 'required_with:code|url',
+            'role'     => 'nullable|in:client,trainer',
+            'premium'  => 'nullable|date',
+            'user'     => 'nullable|array'
+        ]);
+
+        $message = $this->auth->loginWithApple($data);
+        
+        if (isset($message['new_user'])) {
+            return response()->json($message, 422);
+        }
+        if (isset($message['error'])) {
+            return response()->json(['error' => $message['error']], 401);
+        }
+        return response()->json($message, 200);
+    }
 }
