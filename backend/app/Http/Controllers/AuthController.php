@@ -92,23 +92,48 @@ class AuthController extends Controller
     
     public function loginWithApple(Request $request)
     {
-        $data = $request->validate([
-            'code' => 'required_without:id_token|string',
-            'id_token' => 'required_without:code|string',
-            'redirectUri' => 'required_with:code|url',
-            'role'     => 'nullable|in:client,trainer',
-            'premium'  => 'nullable|date',
-            'user'     => 'nullable|array'
-        ]);
+        if ($request->isJson() && $request->has('id_token') && $request->has('role')) {
+            $data = $request->validate([
+                'id_token' => 'required|string',
+                'role'     => 'required|in:client,trainer',
+                'premium'  => 'nullable|date',
+                'user'     => 'nullable|array'
+            ]);
 
+            $message = $this->auth->loginWithApple($data);
+
+            if (isset($message['error'])) {
+                return response()->json(['error' => $message['error']], 401);
+            }
+            return response()->json($message, 200);
+        }
+
+        $data = $request->all();
+        if (isset($data['user'])) {
+            $data['user'] = json_decode($data['user'], true);
+        }
+
+        $data['redirectUri'] = 'https://photonuclear-minutely-tommy.ngrok-free.dev/api/auth/callback/apple';
         $message = $this->auth->loginWithApple($data);
         
         if (isset($message['new_user'])) {
-            return response()->json($message, 422);
+            $queryParams = http_build_query([
+                'new_user_apple' => true,
+                'id_token' => $message['id_token'],
+                'user' => isset($data['user']) ? json_encode($data['user']) : null
+            ]);
+            return redirect(env('FRONTEND_URL') . '/login?' . $queryParams);
         }
+
         if (isset($message['error'])) {
-            return response()->json(['error' => $message['error']], 401);
+            return redirect('/login?error=' . urlencode($message['error']));
         }
-        return response()->json($message, 200);
+
+        $queryParams = http_build_query([
+            'token' => $message['token'],
+            'user' => json_encode($message['user'])
+        ]);
+        
+        return redirect(env('FRONTEND_URL') . '/login?' . $queryParams);
     }
 }

@@ -3,7 +3,6 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import './App.css';
 import Home from "./pages/Home";
 import Auth from "./pages/Auth";
-import Profile from "./pages/Profile";
 
 
 function App() {
@@ -14,7 +13,6 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Auth />} />
-            <Route path="/profil" element={<Profile />} />
           </Routes>
         </div>
       </Router>

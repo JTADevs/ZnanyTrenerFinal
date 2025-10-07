@@ -26,7 +26,7 @@ function Header() {
                 <p><span>GO_</span>TRENER</p>
                 {user ? (
                     <div className='header-right'>
-                        <a href="/profile" className='login-logo'><img src="/images/user.png" alt="profile" /></a>
+                        <a href="/profil" className='login-logo'><img src="/images/user.png" alt="profil" /></a>
                         <a href='' className='login-logo' onClick={handleLogout}><img src="/images/log-out.png" alt="login" /></a>
                     </div>
                 ) : (
