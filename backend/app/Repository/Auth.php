@@ -49,9 +49,14 @@ class Auth implements AuthInterface
             'user'  => [
                 'uid'         => $loginData['localId'],
                 'email'       => $loginData['email'],
-                'displayName' => $loginData['displayName'] ?? ($userData['name'] ?? ''),
+                'displayName' => $loginData['displayName'] ?? null,
                 'role'        => $userData['role'] ?? null,
-                'premium'       => $userData['premium'] ?? null
+                'city'        => $userData['city'] ?? null,
+                'facebook'    => $userData['facebook'] ?? null,
+                'instagram'   => $userData['instagram'] ?? null,
+                'phone'       => $userData['phone'] ?? null,
+                'website'     => $userData['website'] ?? null,
+                'categories'  => $userData['categories'] ?? []
             ]
         ];
     }
@@ -178,9 +183,14 @@ class Auth implements AuthInterface
                 'user'  => [
                     'uid'         => $localId,
                     'email'       => $userData['email'],
-                    'displayName' => $userData['fullname'] ?? ($userData['name'] ?? ''),
+                    'displayName' => $userData['displayName'] ?? null,
                     'role'        => $userData['role'] ?? null,
-                    'premium'     => $userData['premium'] ?? null
+                    'city'        => $userData['city'] ?? null,
+                    'facebook'    => $userData['facebook'] ?? null,
+                    'instagram'   => $userData['instagram'] ?? null,
+                    'phone'       => $userData['phone'] ?? null,
+                    'website'     => $userData['website'] ?? null,
+                    'categories'  => $userData['categories'] ?? []
                 ]
             ];
         } catch (\Exception $e) {
